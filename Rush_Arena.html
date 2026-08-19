@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Rush Arena</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    margin:0;
+    background:#080a14;
+    color:white;
+    font-family:Arial,sans-serif;
+    overflow:hidden;
+}
+
+.screen{
+    display:none;
+    width:100vw;
+    height:100vh;
+}
+
+.active{
+    display:flex;
+}
+
+button{
+    border:0;
+    border-radius:12px;
+    padding:13px 18px;
+    margin:6px;
+    background:#713cff;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    filter:brightness(1.15);
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+input{
+    background:#080b17;
+    color:white;
+    border:1px solid #343b5d;
+    border-radius:9px;
+    padding:11px;
+}
+
+/* MENU */
+
+#menu{
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    overflow:auto;
+}
+
+.logo{
+    font-size:clamp(38px,8vw,70px);
+    font-weight:900;
+    letter-spacing:5px;
+}
+
+.sub{
+    color:#9ba0b8;
+}
+
+.grid{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:750px;
+}
+
+.grid button{
+    width:190px;
+}
+
+.stats{
+    background:#12172a;
+    border:1px solid #2b3352;
+    border-radius:15px;
+    padding:10px 20px;
+    margin:10px;
+}
+
+/* PANELS */
+
+.panel{
+    position:fixed;
+    inset:0;
+    background:#080a14ee;
+    z-index:20;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    overflow:auto;
+}
+
+.panel.show{
+    display:flex;
+}
+
+.card{
+    background:#12172a;
+    border:1px solid #2b3352;
+    border-radius:18px;
+    padding:20px;
+    width:min(850px,94vw);
+    max-height:90vh;
+    overflow:auto;
+}
+
+.close{
+    float:right;
+    background:#ff4059;
+}
+
+/* SKINS */
+
+.skinGrid,
+.mapGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:10px;
+}
+
+.skin,
+.map{
+    background:#1a2037;
+    border:2px solid #30395c;
+    border-radius:14px;
+    padding:12px;
+    text-align:center;
+    cursor:pointer;
+}
+
+.skin.selected,
+.map.selected{
+    border-color:#9b6cff;
+    box-shadow:0 0 15px #713cff66;
+}
+
+.skin.locked{
+    opacity:.55;
+}
+
+.preview{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    margin:auto;
+}
+
+/* PARTY */
+
+#party{
+    flex-direction:column;
+    align-items:center;
+    padding:15px;
+    overflow:auto;
+}
+
+.layout{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:96vw;
+}
+
+.partyCard{
+    background:#12172a;
+    border:1px solid #2b3352;
+    border-radius:18px;
+    padding:16px;
+    width:min(430px,95vw);
+}
+
+.code{
+    text-align:center;
+    font-size:25px;
+    letter-spacing:5px;
+    background:#080b17;
+    padding:12px;
+    border-radius:10px;
+}
+
+.member,
+.msg{
+    background:#1a2037;
+    padding:10px;
+    border-radius:9px;
+    margin:6px 0;
+}
+
+.member{
+    display:flex;
+    justify-content:space-between;
+}
+
+.ready{
+    color:#55ed9b;
+}
+
+.chat{
+    height:260px;
+    overflow:auto;
+    background:#080b17;
+    padding:8px;
+    border-radius:10px;
+}
+
+.chatrow{
+    display:flex;
+    gap:5px;
+}
+
+.chatrow input{
+    flex:1;
+}
+
+/* GAME */
+
+#game{
+    position:relative;
+}
+
+canvas{
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+#hud{
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+    pointer-events:none;
+    z-index:3;
+}
+
+.score{
+    font-size:34px;
+    font-weight:900;
+    text-shadow:0 2px 8px black;
+}
+
+#mode{
+    font-size:13px;
+    opacity:.85;
+}
+
+#mapName{
+    font-size:12px;
+    color:#ffd34d;
+}
+
+#back{
+    position:absolute;
+    left:10px;
+    top:10px;
+    z-index:4;
+}
+
+#gameStats{
+    position:absolute;
+    right:10px;
+    top:10px;
+    background:#080b17bb;
+    padding:8px 12px;
+    border-radius:10px;
+    z-index:4;
+    font-size:13px;
+}
+
+/* MOBILE */
+
+#mobile{
+    display:none;
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:5;
+}
+
+.touch{
+    position:absolute;
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    background:#ffffff22;
+    border:2px solid #ffffff44;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:bold;
+    pointer-events:auto;
+    user-select:none;
+    touch-action:none;
+}
+
+#u{ left:75px; bottom:125px; }
+#d{ left:75px; bottom:15px; }
+#l{ left:8px; bottom:70px; }
+#r{ left:142px; bottom:70px; }
+
+#dash{
+    right:25px;
+    bottom:55px;
+    width:88px;
+    height:88px;
+    background:#713cff66;
+}
+
+@media(max-width:700px){
+    #mobile{ display:block; }
+    .logo{ margin-top:15px; }
+    #gameStats{ top:60px; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="menu" class="screen active">
+    <div class="logo">RUSH ARENA</div>
+    <p class="sub">⚡ THE ULTIMATE RUSH BATTLE</p>
+
+    <div class="stats">
+        🪙 <span id="coins">0</span>
+        &nbsp; • &nbsp;
+        ⭐ Level <span id="level">1</span>
+        &nbsp; • &nbsp;
+        🏆 Wins <span id="wins">0</span>
+    </div>
+
+    <div class="grid">
+        <button onclick="start(1)">🥊 1v1 DUEL</button>
+        <button onclick="start(2)">👥 2v2 TEAMS</button>
+        <button onclick="start(3)">🏆 3v3 RUSH</button>
+        <button onclick="start(4)">🌪 CHAOS MODE</button>
+        <button onclick="openSkins()">🎨 SKINS</button>
+        <button onclick="openMaps()">🗺️ MAPS</button>
+        <button onclick="partyOpen()">👥 PARTY + CHAT</button>
+    </div>
+
+    <p class="sub" id="computerHelp">WASD / ARROWS to move • SPACE to dash</p>
+    <p class="sub" id="mobileHelp" style="display:none">📱 Use the controls on screen</p>
+</div>
+
+<div id="skinsPanel" class="panel">
+    <div class="card">
+        <button class="close" onclick="closePanels()">X</button>
+        <h1>🎨 SKIN SHOP</h1>
+        <p class="sub">Choose your player. Buy new skins with coins.</p>
+        <div id="skinGrid" class="skinGrid"></div>
+    </div>
+</div>
+
+<div id="mapsPanel" class="panel">
+    <div class="card">
+        <button class="close" onclick="closePanels()">X</button>
+        <h1>🗺️ MAP SELECT</h1>
+        <p class="sub">Every map changes the arena.</p>
+        <div id="mapGrid" class="mapGrid"></div>
+    </div>
+</div>
+
+<div id="party" class="screen">
+    <button onclick="menu()">← MENU</button>
+    <h1>👥 PARTY</h1>
+
+    <div class="layout">
+        <div class="partyCard">
+            <h2>Party Lobby</h2>
+            <p class="sub">Share this demo code:</p>
+            <div id="code" class="code"></div>
+            <button onclick="copyCode()">📋 COPY CODE</button>
+            <h3>Members</h3>
+            <div id="members"></div>
+            <button onclick="addFriend()">+ SIMULATE FRIEND</button>
+            <button onclick="toggleReady()">READY</button>
+            <button onclick="partyStart()">🚀 START MATCH</button>
+        </div>
+
+        <div class="partyCard">
+            <h2>💬 Party Chat</h2>
+            <div id="chat" class="chat"></div>
+            <div class="chatrow">
+                <input id="chatInput" maxlength="150" placeholder="Type a message...">
+                <button onclick="send()">SEND</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="game" class="screen">
+    <canvas id="c"></canvas>
+
+    <div id="hud">
+        <div class="score"><span id="bs">0</span>-<span id="rs">0</span></div>
+        <div id="mode"></div>
+        <div id="mapName"></div>
+    </div>
+
+    <div id="gameStats">🪙 <span id="gameCoins">0</span></div>
+    <button id="back" onclick="menu()">MENU</button>
+
+    <div id="mobile">
+        <div class="touch" id="u">▲</div>
+        <div class="touch" id="d">▼</div>
+        <div class="touch" id="l">◀</div>
+        <div class="touch" id="r">▶</div>
+        <div class="touch" id="dash">DASH</div>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const c = $("c");
+const ctx = c.getContext("2d");
+
+let keys = {};
+let running = false;
+let mode = 3;
+let blue = 0;
+let red = 0;
+let players = [];
+let ball = {};
+let powerups = [];
+let particles = [];
+let selectedMap = localStorage.getItem("rushMap") || "classic";
+let selectedSkin = localStorage.getItem("rushSkin") || "blue";
+let combo = 0;
+let shake = 0;
+
+const isMobile =
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    ("ontouchstart" in window && navigator.maxTouchPoints > 0);
+
+if(isMobile){
+    $("mobile").style.display = "block";
+    $("computerHelp").style.display = "none";
+    $("mobileHelp").style.display = "block";
+}
+
+let save = JSON.parse(localStorage.getItem("rushSave") || "{}");
+save.coins ??= 100;
+save.xp ??= 0;
+save.wins ??= 0;
+save.ownedSkins ??= ["blue"];
+
+function saveGame(){
+    localStorage.setItem("rushSave", JSON.stringify(save));
+    localStorage.setItem("rushMap", selectedMap);
+    localStorage.setItem("rushSkin", selectedSkin);
+    updateMenuStats();
+}
+
+function getLevel(){
+    return Math.floor(save.xp / 500) + 1;
+}
+
+function addXP(amount){
+    let old = getLevel();
+    save.xp += amount;
+    let now = getLevel();
+
+    if(now > old){
+        save.coins += 100;
+        alert("⭐ LEVEL UP!\n\nYou reached Level " + now + "!\n\n+100 coins");
+    }
+
+    saveGame();
+}
+
+function updateMenuStats(){
+    $("coins").textContent = save.coins;
+    $("level").textContent = getLevel();
+    $("wins").textContent = save.wins;
+    $("gameCoins").textContent = save.coins;
+}
+
+updateMenuStats();
+
+const skins = {
+    blue:{name:"⚡ Blue",color:"#3185ff",price:0},
+    red:{name:"🔥 Red",color:"#ff4059",price:150},
+    green:{name:"☢️ Toxic",color:"#42e66b",price:250},
+    purple:{name:"💜 Shadow",color:"#a45cff",price:400},
+    gold:{name:"👑 Gold",color:"#ffd34d",price:700},
+    ice:{name:"❄️ Ice",color:"#75e9ff",price:900},
+    pink:{name:"💗 Neon Pink",color:"#ff4fd8",price:1100},
+    orange:{name:"🔥 Lava",color:"#ff8c32",price:1400},
+    white:{name:"⚪ Ghost",color:"#eeeeff",price:1800},
+    rainbow:{name:"🌈 Rainbow",color:"rainbow",price:2500}
+};
+
+function openSkins(){
+    $("skinsPanel").classList.add("show");
+    let html = "";
+
+    for(let id in skins){
+        let s = skins[id];
+        let owned = save.ownedSkins.includes(id);
+        let selected = selectedSkin === id;
+        let style = s.color === "rainbow"
+            ? "background:linear-gradient(45deg,#f44,#ff4,#4f4,#4ff,#84f,#f4f)"
+            : `background:${s.color}`;
+
+        html += `
+            <div class="skin ${selected?"selected":""} ${owned?"":"locked"}" onclick="chooseSkin('${id}')">
+                <div class="preview" style="${style}"></div>
+                <b>${s.name}</b>
+                <div>${owned ? selected ? "✅ EQUIPPED" : "OWNED" : "🪙 " + s.price}</div>
+            </div>
+        `;
+    }
+
+    $("skinGrid").innerHTML = html;
+}
+
+function chooseSkin(id){
+    let s = skins[id];
+
+    if(save.ownedSkins.includes(id)){
+        selectedSkin = id;
+        saveGame();
+        openSkins();
+        return;
+    }
+
+    if(save.coins < s.price){
+        alert("You need " + s.price + " coins!");
+        return;
+    }
+
+    save.coins -= s.price;
+    save.ownedSkins.push(id);
+    selectedSkin = id;
+    saveGame();
+    openSkins();
+}
+
+const maps = {
+    classic:{name:"🏟️ Classic Arena",wall:"#30395c",bg:"#080a14",obstacles:[]},
+    jungle:{name:"🌴 Jungle Ruins",wall:"#236b45",bg:"#06140c",obstacles:[{x:.35,y:.40,w:.07,h:.20},{x:.65,y:.40,w:.07,h:.20}]},
+    ice:{name:"❄️ Frozen Zone",wall:"#5b9fb8",bg:"#06121a",obstacles:[{x:.45,y:.30,w:.10,h:.12},{x:.45,y:.58,w:.10,h:.12}]},
+    lava:{name:"🌋 Lava Pit",wall:"#a43d22",bg:"#190604",obstacles:[{x:.30,y:.47,w:.12,h:.07},{x:.58,y:.47,w:.12,h:.07}]},
+    neon:{name:"🌃 Neon City",wall:"#8d45c7",bg:"#0b0314",obstacles:[{x:.25,y:.35,w:.08,h:.30},{x:.67,y:.35,w:.08,h:.30}]}
+};
+
+function openMaps(){
+    $("mapsPanel").classList.add("show");
+    let html = "";
+
+    for(let id in maps){
+        let m = maps[id];
+        html += `
+            <div class="map ${selectedMap===id ? "selected":""}" onclick="chooseMap('${id}')">
+                <h3>${m.name}</h3>
+                <p>${id==="classic" ? "No obstacles" : "Special obstacles"}</p>
+            </div>
+        `;
+    }
+
+    $("mapGrid").innerHTML = html;
+}
+
+function chooseMap(id){
+    selectedMap = id;
+    saveGame();
+    openMaps();
+}
+
+function closePanels(){
+    document.querySelectorAll(".panel").forEach(x => x.classList.remove("show"));
+}
+
+function makeCode(){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let x = "";
+    for(let i=0;i<6;i++){
+        x += chars[Math.floor(Math.random()*chars.length)];
+    }
+    return x;
+}
+
+let party = {
+    code:makeCode(),
+    members:[{name:"Nash",ready:false,leader:true}],
+    msgs:[]
+};
+
+function menu(){
+    running = false;
+    $("game").classList.remove("active");
+    $("party").classList.remove("active");
+    $("menu").classList.add("active");
+    updateMenuStats();
+}
+
+function partyOpen(){
+    $("menu").classList.remove("active");
+    $("party").classList.add("active");
+    renderParty();
+}
+
+function renderParty(){
+    $("code").textContent = party.code;
+
+    $("members").innerHTML = party.members.map(m => `
+        <div class="member">
+            <span>${m.name}${m.leader?" 👑":""}</span>
+            <span class="${m.ready?"ready":""}">${m.ready?"READY":"NOT READY"}</span>
+        </div>
+    `).join("");
+
+    $("chat").innerHTML = party.msgs.map(m => `
+        <div class="msg"><b>${escapeHTML(m.n)}</b>: ${escapeHTML(m.t)}</div>
+    `).join("");
+
+    $("chat").scrollTop = $("chat").scrollHeight;
+}
+
+function escapeHTML(text){
+    return text.replace(/[&<>"']/g, x => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+    }[x]));
+}
+
+function addFriend(){
+    if(party.members.length>=6){
+        systemMessage("Party full.");
+        return;
+    }
+
+    let name = "Friend" + party.members.length;
+    party.members.push({name:name,ready:false});
+    systemMessage(name+" joined.");
+    renderParty();
+}
+
+function toggleReady(){
+    party.members[0].ready = !party.members[0].ready;
+    renderParty();
+}
+
+function systemMessage(text){
+    party.msgs.push({n:"SYSTEM",t:text});
+    renderParty();
+}
+
+function send(){
+    let input = $("chatInput");
+    let text = input.value.trim();
+    if(!text)return;
+    party.msgs.push({n:"Nash",t:text});
+    input.value="";
+    renderParty();
+}
+
+$("chatInput").addEventListener("keydown", e => {
+    if(e.key==="Enter")send();
+});
+
+function copyCode(){
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(party.code);
+    }
+    systemMessage("Party code copied!");
+}
+
+function partyStart(){
+    if(party.members.length<2){
+        systemMessage("Add a friend first.");
+        return;
+    }
+
+    systemMessage("🚀 Match found!");
+    setTimeout(()=>start(3),800);
+}
+
+function start(m){
+    closePanels();
+    mode=m;
+
+    $("menu").classList.remove("active");
+    $("party").classList.remove("active");
+    $("game").classList.add("active");
+
+    $("mode").textContent = {
+        1:"🥊 1v1 DUEL",
+        2:"👥 2v2 TEAMS",
+        3:"🏆 3v3 RUSH",
+        4:"🌪 CHAOS MODE"
+    }[m];
+
+    $("mapName").textContent = maps[selectedMap].name;
+
+    blue=0;
+    red=0;
+    combo=0;
+
+    score();
+    makePlayers();
+    resetBall();
+    createPowerups();
+    particles=[];
+    running=true;
+    requestAnimationFrame(loop);
+}
+
+function makePlayers(){
+    players=[];
+    let n = Math.min(mode,3);
+
+    players.push({x:c.width*.25,y:c.height/2,t:"b",r:25,s:5,h:1,dashCooldown:0});
+
+    for(let i=1;i<n;i++){
+        players.push({x:c.width*.25,y:c.height/2+(i-1)*100-50,t:"b",r:25,s:4,h:0,dashCooldown:0});
+    }
+
+    for(let i=0;i<n;i++){
+        players.push({x:c.width*.75,y:c.height/2+i*100-50,t:"r",r:25,s:4,h:0,dashCooldown:0});
+    }
+}
+
+function resetBall(){
+    ball={
+        x:c.width/2,
+        y:c.height/2,
+        vx:Math.random()<.5 ? 3 : -3,
+        vy:(Math.random()-.5)*5,
+        r:17
+    };
+}
+
+const powerTypes=["speed","giant","freeze","boost"];
+
+function createPowerups(){
+    powerups=[];
+    for(let i=0;i<4;i++){
+        powerups.push({
+            x:150+Math.random()*(c.width-300),
+            y:140+Math.random()*(c.height-220),
+            type:powerTypes[Math.floor(Math.random()*powerTypes.length)],
+            on:true
+        });
+    }
+}
+
+function usePowerup(p,q){
+    q.on=false;
+    let oldSpeed=p.s;
+
+    if(q.type==="speed"){
+        p.s=8;
+        systemMessageGame("⚡ SPEED BOOST!");
+        setTimeout(()=>p.s=oldSpeed,4000);
+    }
+
+    if(q.type==="giant"){
+        p.r=38;
+        systemMessageGame("💪 GIANT!");
+        setTimeout(()=>p.r=25,5000);
+    }
+
+    if(q.type==="freeze"){
+        players.filter(x=>x.t!==p.t).forEach(x=>x.s=1);
+        systemMessageGame("❄️ ENEMY FREEZE!");
+        setTimeout(()=>players.filter(x=>x.t!==p.t).forEach(x=>x.s=4),3000);
+    }
+
+    if(q.type==="boost"){
+        ball.vx*=1.7;
+        ball.vy*=1.7;
+        systemMessageGame("🔥 BALL BOOST!");
+    }
+
+    setTimeout(()=>q.on=true,7000);
+}
+
+function systemMessageGame(text){
+    combo++;
+    createText(text,c.width/2,130);
+}
+
+function dash(){
+    if(!running)return;
+
+    let p=players[0];
+    let x=0;
+    let y=0;
+
+    if(keys.w||keys.arrowup)y--;
+    if(keys.s||keys.arrowdown)y++;
+    if(keys.a||keys.arrowleft)x--;
+    if(keys.d||keys.arrowright)x++;
+
+    if(!x&&!y)x=1;
+
+    let z=Math.hypot(x,y);
+
+    p.x+=x/z*110;
+    p.y+=y/z*110;
+
+    p.x=Math.max(30,Math.min(c.width-30,p.x));
+    p.y=Math.max(105,Math.min(c.height-30,p.y));
+
+    shake=8;
+    burst(p.x,p.y,12,playerColor(p));
+}
+
+addEventListener("keydown", e=>{
+    if(isMobile)return;
+    keys[e.key.toLowerCase()]=true;
+
+    if(e.code==="Space"){
+        e.preventDefault();
+        dash();
+    }
+});
+
+addEventListener("keyup", e=>{
+    keys[e.key.toLowerCase()]=false;
+});
+
+function bind(id,key){
+    let e=$(id);
+
+    e.addEventListener("pointerdown", event=>{
+        event.preventDefault();
+        keys[key]=true;
+    });
+
+    ["pointerup","pointercancel","pointerleave"].forEach(type=>{
+        e.addEventListener(type, event=>{
+            event.preventDefault();
+            keys[key]=false;
+        });
+    });
+}
+
+if(isMobile){
+    bind("u","w");
+    bind("d","s");
+    bind("l","a");
+    bind("r","d");
+
+    $("dash").addEventListener("pointerdown", e=>{
+        e.preventDefault();
+        dash();
+    });
+}
+
+function obstacleCollision(p){
+    let list = maps[selectedMap].obstacles;
+
+    for(let o of list){
+        let x=o.x*c.width;
+        let y=95+o.y*(c.height-120);
+        let w=o.w*c.width;
+        let h=o.h*(c.height-120);
+
+        let closestX = Math.max(x,Math.min(p.x,x+w));
+        let closestY = Math.max(y,Math.min(p.y,y+h));
+        let dx=p.x-closestX;
+        let dy=p.y-closestY;
+
+        if(dx*dx+dy*dy<p.r*p.r){
+            if(Math.abs(dx)>Math.abs(dy)) p.x += dx>0 ? 3 : -3;
+            else p.y += dy>0 ? 3 : -3;
+        }
+    }
+}
+
+function update(){
+    if(!running)return;
+
+    let p=players[0];
+
+    if(keys.w||keys.arrowup)p.y-=p.s;
+    if(keys.s||keys.arrowdown)p.y+=p.s;
+    if(keys.a||keys.arrowleft)p.x-=p.s;
+    if(keys.d||keys.arrowright)p.x+=p.s;
+
+    p.x=Math.max(30,Math.min(c.width-30,p.x));
+    p.y=Math.max(105,Math.min(c.height-30,p.y));
+
+    obstacleCollision(p);
+
+    players.slice(1).forEach(q=>{
+        let targetX=ball.x;
+        let targetY=ball.y;
+        let x=targetX-q.x;
+        let y=targetY-q.y;
+        let z=Math.hypot(x,y);
+
+        if(z>5){
+            q.x+=x/z*q.s*.6;
+            q.y+=y/z*q.s*.6;
+        }
+
+        obstacleCollision(q);
+    });
+
+    ball.x+=ball.vx;
+    ball.y+=ball.vy;
+
+    if(ball.y<100 || ball.y>c.height-25){
+        ball.vy*=-1;
+        burst(ball.x,ball.y,4,"#ffffff");
+    }
+
+    maps[selectedMap].obstacles.forEach(o=>{
+        let x=o.x*c.width;
+        let y=95+o.y*(c.height-120);
+        let w=o.w*c.width;
+        let h=o.h*(c.height-120);
+
+        if(ball.x>x && ball.x<x+w && ball.y>y && ball.y<y+h){
+            ball.vx*=-1;
+        }
+    });
+
+    players.forEach(q=>{
+        let x=ball.x-q.x;
+        let y=ball.y-q.y;
+        let z=Math.hypot(x,y);
+
+        if(z<ball.r+q.r){
+            let a=Math.atan2(y,x);
+            ball.vx=Math.cos(a)*7;
+            ball.vy=Math.sin(a)*7;
+            burst(ball.x,ball.y,6,playerColor(q));
+        }
+    });
+
+    powerups.forEach(q=>{
+        if(!q.on)return;
+
+        players.forEach(p=>{
+            if(Math.hypot(q.x-p.x,q.y-p.y)<45){
+                usePowerup(p,q);
+            }
+        });
+    });
+
+    if(ball.x<0){
+        red++;
+        combo=0;
+        goalEffect(c.width*.12,c.height/2);
+        score();
+        resetBall();
+        save.coins+=10;
+        addXP(50);
+    }
+
+    if(ball.x>c.width){
+        blue++;
+        combo++;
+        goalEffect(c.width*.88,c.height/2);
+        score();
+        resetBall();
+        save.coins+=10;
+        addXP(75);
+    }
+
+    if(blue>=5 || red>=5){
+        let won = blue>red;
+
+        if(won){
+            save.wins++;
+            save.coins+=100;
+            addXP(250);
+        }else{
+            save.coins+=25;
+            addXP(75);
+        }
+
+        saveGame();
+
+        setTimeout(()=>{
+            alert(won ? "🏆 BLUE WINS!\n+100 coins" : "💥 RED WINS!\n+25 coins");
+            menu();
+        },100);
+
+        running=false;
+    }
+
+    updateParticles();
+    if(shake>0)shake--;
+}
+
+function playerColor(p){
+    if(p.h){
+        let s=skins[selectedSkin];
+
+        if(s.color==="rainbow"){
+            return `hsl(${Date.now()/5%360},100%,60%)`;
+        }
+
+        return s.color;
+    }
+
+    return p.t==="b" ? "#3185ff" : "#ff4059";
+}
+
+function burst(x,y,n,color){
+    for(let i=0;i<n;i++){
+        particles.push({
+            x:x,
+            y:y,
+            vx:(Math.random()-.5)*8,
+            vy:(Math.random()-.5)*8,
+            life:30,
+            color:color
+        });
+    }
+}
+
+function createText(text,x,y){
+    particles.push({
+        x:x,
+        y:y,
+        vx:0,
+        vy:-.5,
+        life:70,
+        color:"#ffd34d",
+        text:text
+    });
+}
+
+function updateParticles(){
+    particles.forEach(p=>{
+        p.x+=p.vx;
+        p.y+=p.vy;
+        p.vy+=.02;
+        p.life--;
+    });
+
+    particles=particles.filter(p=>p.life>0);
+}
+
+function goalEffect(x,y){
+    burst(x,y,45,"#ffd34d");
+    createText("⚡ GOAL!",x,y-60);
+    shake=15;
+}
+
+function draw(){
+    ctx.save();
+
+    if(shake){
+        ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+    }
+
+    let map=maps[selectedMap];
+
+    ctx.fillStyle=map.bg;
+    ctx.fillRect(0,0,c.width,c.height);
+
+    ctx.strokeStyle=map.wall;
+    ctx.lineWidth=5;
+    ctx.strokeRect(0,95,c.width,c.height-120);
+
+    ctx.beginPath();
+    ctx.moveTo(c.width/2,95);
+    ctx.lineTo(c.width/2,c.height-25);
+    ctx.stroke();
+
+    maps[selectedMap].obstacles.forEach(o=>{
+        let x=o.x*c.width;
+        let y=95+o.y*(c.height-120);
+        let w=o.w*c.width;
+        let h=o.h*(c.height-120);
+
+        ctx.fillStyle=map.wall;
+        ctx.fillRect(x,y,w,h);
+    });
+
+    ctx.fillStyle="#247dff";
+    ctx.fillRect(0,c.height/2-100,25,200);
+
+    ctx.fillStyle="#ff4059";
+    ctx.fillRect(c.width-25,c.height/2-100,25,200);
+
+    powerups.forEach(q=>{
+        if(!q.on)return;
+
+        let color={
+            speed:"#42e66b",
+            giant:"#a45cff",
+            freeze:"#75e9ff",
+            boost:"#ffd34d"
+        }[q.type];
+
+        ctx.beginPath();
+        ctx.arc(q.x,q.y,17,0,Math.PI*2);
+        ctx.fillStyle=color;
+        ctx.fill();
+
+        ctx.fillStyle="#111";
+        ctx.font="bold 12px Arial";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText(q.type[0].toUpperCase(),q.x,q.y);
+    });
+
+    players.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+
+        ctx.fillStyle = p.h
+            ? playerColor(p)
+            : p.t==="b" ? "#3185ff" : "#ff4059";
+
+        ctx.fill();
+
+        if(p.h){
+            ctx.strokeStyle="white";
+            ctx.lineWidth=4;
+            ctx.stroke();
+        }
+    });
+
+    ctx.beginPath();
+    ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
+    ctx.fillStyle="white";
+    ctx.fill();
+
+    particles.forEach(p=>{
+        if(p.text){
+            ctx.globalAlpha=p.life/70;
+            ctx.fillStyle=p.color;
+            ctx.font="bold 20px Arial";
+            ctx.textAlign="center";
+            ctx.fillText(p.text,p.x,p.y);
+            ctx.globalAlpha=1;
+        }else{
+            ctx.globalAlpha=p.life/30;
+            ctx.fillStyle=p.color;
+            ctx.fillRect(p.x,p.y,5,5);
+            ctx.globalAlpha=1;
+        }
+    });
+
+    ctx.restore();
+}
+
+function score(){
+    $("bs").textContent=blue;
+    $("rs").textContent=red;
+}
+
+function resize(){
+    c.width=innerWidth;
+    c.height=innerHeight;
+}
+
+addEventListener("resize", resize);
+resize();
+
+function loop(){
+    if(!running)return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
